@@ -119,7 +119,9 @@
     <h1>Wilson Goon Count</h1>
     <div id="counter">...</div>
     <div class="status">
-      <span class="pulse-dot"></span> Live Math Factored (-3)
+      <span class="pulse-dot"></span> 
+      <!-- Embedded tag to handle the updates smoothly -->
+      <span id="status-text">Fetching live data...</span>
     </div>
   </div>
 
@@ -143,12 +145,23 @@
 
           document.getElementById('counter').innerText = realCount;
           document.getElementById('bouncing-counter').innerText = realCount;
+
+          // --- LOGIC FOR THE TRACKER STATUS ---
+          const statusText = document.getElementById('status-text');
+          if (realCount <= 5) {
+            statusText.innerText = "🟢 Threat Level: Safe";
+          } else if (realCount <= 15) {
+            statusText.innerText = "🟡 Threat Level: Concerning";
+          } else {
+            statusText.innerText = "🔴 Threat Level: Critical Goon Levels";
+          }
         }
       })
       .catch(error => {
         console.error("Error fetching count:", error);
         document.getElementById('counter').innerText = "ERROR";
         document.getElementById('bouncing-counter').innerText = "!!";
+        document.getElementById('status-text').innerText = "❌ System Override Required";
       });
     }
 
