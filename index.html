@@ -38,6 +38,7 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       transform: translateY(0px);
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 10; /* Keeps the card layered on top of the bouncing numbers */
     }
 
     .card:hover {
@@ -90,9 +91,26 @@
       50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--glow-color); }
       100% { transform: scale(0.95); opacity: 0.5; }
     }
+
+    /* Bouncing Element Style */
+    #bouncing-counter {
+      position: absolute;
+      font-size: 140px;
+      font-weight: 900;
+      color: var(--glow-color);
+      opacity: 0.25; /* Semi-transparent so it floats in the background beautifully */
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+      user-select: none;
+      pointer-events: none; /* Stops it from blocking mouse clicks on the page */
+      z-index: 1;
+    }
   </style>
 </head>
 <body>
+
+  <!-- The separate bouncing number element in the background -->
+  <div id="bouncing-counter">...</div>
 
   <div class="card">
     <h1>Wilson Goon Count</h1>
@@ -123,17 +141,58 @@
           // Prevents the dashboard from showing negative numbers if it's brand new
           if (realCount < 0) realCount = 0;
 
+          // Updates both elements simultaneously with the correct live count!
           document.getElementById('counter').innerText = realCount;
+          document.getElementById('bouncing-counter').innerText = realCount;
         }
       })
       .catch(error => {
         console.error("Error fetching count:", error);
         document.getElementById('counter').innerText = "ERROR";
+        document.getElementById('bouncing-counter').innerText = "!!";
       });
     }
 
     // Run immediately when the website loads
     fetchCount();
+
+    // --- BOUNCING PHYSICS ENGINE ---
+    const bounceEl = document.getElementById('bouncing-counter');
+    
+    // Initial velocity variables (speed vectors)
+    let vx = 2.5; 
+    let vy = 2.0; 
+    
+    // Pick a random starting point safely away from the exact top-left edge
+    let posX = Math.random() * (window.innerWidth - 200);
+    let posY = Math.random() * (window.innerHeight - 200);
+
+    function updatePhysics() {
+      const elWidth = bounceEl.offsetWidth;
+      const elHeight = bounceEl.offsetHeight;
+
+      // Wall collision checks (X axis)
+      if (posX + vx < 0 || posX + vx > window.innerWidth - elWidth) {
+        vx = -vx;
+      }
+      // Wall collision checks (Y axis)
+      if (posY + vy < 0 || posY + vy > window.innerHeight - elHeight) {
+        vy = -vy;
+      }
+
+      // Step position coordinates forward
+      posX += vx;
+      posY += vy;
+
+      // Update screen rendering coordinates via high-performance hardware translation
+      bounceEl.style.transform = `translate(${posX}px, ${posY}px)`;
+
+      // Loop frame animation continuously
+      requestAnimationFrame(updatePhysics);
+    }
+
+    // Initialize background movement loop
+    updatePhysics();
   </script>
 </body>
 </html>
