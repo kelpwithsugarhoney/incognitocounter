@@ -140,7 +140,7 @@
       .then(response => response.json())
       .then(data => {
         if (data && data.length > 0) {
-          let realCount = data[0].count - 3;
+          let realCount = data[0].count - 6;
           if (realCount < 0) realCount = 0;
 
           document.getElementById('counter').innerText = realCount;
