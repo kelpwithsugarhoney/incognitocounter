@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Goon Screen</title>
+  <title>Wilson Goon Tracker</title>
   <style>
     :root {
       --glow-color: #00ff88;
@@ -13,45 +13,100 @@
     body {
       font-family: system-ui, -apple-system, sans-serif;
       background-color: var(--bg-color);
-      /* Organic background pattern */
       background-image: 
-        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
       background-size: 40px 40px;
-      margin: 0;
-      overflow: hidden; /* Crucial: Keeps the number in the viewport */
       color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
     }
 
-    #bouncing-number { 
-      position: absolute; /* Allows for freely moving the number */
-      font-size: 160px; /* Make it massive so it can't be missed */
+    /* Premium Translucent Card */
+    .card {
+      background: rgba(20, 20, 25, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 40px 60px;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 255, 136, 0.05);
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transform: translateY(0px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(0, 255, 136, 0.3);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 50px rgba(0, 255, 136, 0.1);
+    }
+
+    h1 { 
+      margin: 0 0 15px 0; 
+      font-size: 16px; 
+      color: #8a8f98; 
+      text-transform: uppercase; 
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+
+    /* Cyberpunk Neon Glow Number */
+    #counter { 
+      font-size: 96px; 
       font-weight: 900; 
       color: var(--glow-color); 
+      margin: 0;
       line-height: 1;
-      
-      /* Neon Glow Effect */
-      text-shadow: 
-        0 0 10px rgba(0, 255, 136, 0.5), 
-        0 0 20px rgba(0, 255, 136, 0.3), 
-        0 0 40px rgba(0, 255, 136, 0.15);
-      
-      user-select: none; /* Wilson can't just select/delete the text easily */
-      cursor: default;
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2);
+    }
+
+    .status { 
+      font-size: 13px; 
+      color: #525866; 
+      margin-top: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Active pulse dot */
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--glow-color);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--glow-color);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--glow-color); }
+      100% { transform: scale(0.95); opacity: 0.5; }
     }
   </style>
 </head>
 <body>
 
-  <div id="bouncing-number">0</div>
+  <div class="card">
+    <h1>Wilson Goon Count</h1>
+    <div id="counter">...</div>
+    <div class="status">
+      <span class="pulse-dot"></span> Live Math Factored (-3)
+    </div>
+  </div>
 
   <script>
-    // --- 1. SET UP SUPABASE ---
     const SUPABASE_URL = "https://fgybbofeczxqpzpotcuk.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZneWJib2ZlY3p4cXB6cG90Y3VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMzUxNjYsImV4cCI6MjA5NDkxMTE2Nn0.-5dHj_Z2kY8JqIuEforXz0XCqcy1SIDBIKA_f8dg1gg";
 
-    // --- 2. GET THE LIVE NUMBER AND APPLY MATH (-3) ---
-    function fetchLiveCount() {
+    function fetchCount() {
       fetch(`${SUPABASE_URL}/rest/v1/counter_store?id=eq.1`, {
         method: "GET",
         headers: {
@@ -62,30 +117,23 @@
       .then(response => response.json())
       .then(data => {
         if (data && data.length > 0) {
-          // Takes the raw DB number and subtracts 3 automatically (with negative number safety)
-          let realCount = Math.max(0, data[0].count - 3);
+          // Takes the raw database number and subtracts 3 automatically
+          let realCount = data[0].count - 3;
+          
+          // Prevents the dashboard from showing negative numbers if it's brand new
+          if (realCount < 0) realCount = 0;
 
-          // Update the bouncing div with the actual number
-          document.getElementById('bouncing-number').innerText = realCount;
+          document.getElementById('counter').innerText = realCount;
         }
       })
       .catch(error => {
-        console.error("Error:", error);
-        document.getElementById('bouncing-number').innerText = "!!";
+        console.error("Error fetching count:", error);
+        document.getElementById('counter').innerText = "ERROR";
       });
     }
 
     // Run immediately when the website loads
-    fetchLiveCount();
-    // Optional: Keep checking every 10 seconds for real-time updates while it bounces
-    setInterval(fetchLiveCount, 10000); 
-
-    // --- 3. THE BOUNCING PHYSICS (JAVASCRIPT) ---
-    // We use JS because it needs to know the exact window size
-    const numberElement = document.getElementById('bouncing-number');
-    
-    // Initial movement direction and speed (pixels per frame)
-    let vx = 3; // Horizontal speed
-    let vy = 2; // Vertical speed
-    
-    let currentX = Math.random() * (window.innerWidth - 300); // Random starting
+    fetchCount();
+  </script>
+</body>
+</html>
