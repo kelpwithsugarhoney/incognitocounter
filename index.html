@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wilson Goon Tracker</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕵️‍♂️</text></svg>">
+  <!-- Updated link to use your uploaded favicon.ico file -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <style>
     :root {
       --glow-color: #00ff88;
@@ -107,7 +108,7 @@
       user-select: none;
       pointer-events: none;
       z-index: 1;
-      will-change: transform; /* Optimizes performance for smooth moving */
+      will-change: transform;
     }
   </style>
 </head>
@@ -157,11 +158,9 @@
     // --- RE-ENGINEERED PHYSICS SYSTEM ---
     const bounceEl = document.getElementById('bouncing-counter');
     
-    // Speed setup
     let vx = 3.5; 
     let vy = 2.5; 
     
-    // Start directly in the middle of the screen to stay perfectly safe from corners
     let posX = window.innerWidth / 2 - 100;
     let posY = window.innerHeight / 2 - 50;
 
@@ -169,11 +168,9 @@
       const elWidth = bounceEl.offsetWidth;
       const elHeight = bounceEl.offsetHeight;
 
-      // Move element
       posX += vx;
       posY += vy;
 
-      // Strict wall containment checks
       if (posX <= 0) {
         posX = 0;
         vx = -vx;
@@ -190,13 +187,11 @@
         vy = -vy;
       }
 
-      // Apply coordinates safely
       bounceEl.style.transform = `translate(${posX}px, ${posY}px)`;
 
       requestAnimationFrame(updatePhysics);
     }
 
-    // Run the animation loop
     updatePhysics();
   </script>
 </body>
